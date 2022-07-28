@@ -1,4 +1,5 @@
 #Library Imports
+from tkinter.font import Font
 import requests
 import tkinter as tk
 from tkinter import *
@@ -74,6 +75,28 @@ class Card:
 
 """---------------------------------------------------------- /Card Class -----------------------------------------------------------------------------------------"""
 
+"""---------------------------------------------------------- Player Class -----------------------------------------------------------------------------------------"""
+class Player:
+    def __init__(self):
+        self.wins = None
+        self.loses = None
+
+    def __init__(self, wins, loses):
+        self.wins = int(wins)
+        self.loses = int(loses)
+
+    def updateFile(self):
+        file = open("W-L", 'w')
+        file.write(str(self.wins) + "\n")
+        file.write(str(self.loses))
+        file.close()
+    
+    def updateGUI(self):
+        winCountLabelStr.set(self.wins)
+        loseCountLabelStr.set(self.loses)
+
+"""---------------------------------------------------------- /Player Class -----------------------------------------------------------------------------------------"""
+
 
 """---------------------------------------------------------- Functions -----------------------------------------------------------------------------------------"""
 """
@@ -110,6 +133,10 @@ def hit():
     #check if player busted
     if newTotal > 21:
         busted()
+        player.loses +=1
+        player.updateFile()
+        player.updateGUI()
+        
 
 """
 Player keeps the hand they have and compares it to the dealer, if they have higher they win
@@ -123,15 +150,23 @@ def stay():
     #Get total of dealers
     dealersTotal = getTotal(dealerCards)
     if dealersTotal > getTotal(playerCards):
-        loseLabel = Label(dealerCanvas, text="You Lose", bg="red")
+        loseLabel = Label(dealerCanvas, text="You Lose", font=hfont, bg="red")
         loseLabel.place(relheight=0.25, relwidth=0.25, relx=0.5, rely=0.5, anchor="center")
         #Create a button to play again and pass the previous label to destroy, if played again
-        playAgainButton = Button(canvasBack, text="Play Again", command= lambda: playagain(loseLabel, playAgainButton))
+        playAgainButton = Button(canvasBack, text="Play Again", font=hfont, command= lambda: playagain(loseLabel, playAgainButton))
+        #add to loses
+        player.loses +=1
+        player.updateFile()
+        player.updateGUI()
+        
     else:
-        winLabel = Label(dealerCanvas, text="You Win", bg="#39e75f")
+        player.wins +=1
+        player.updateFile()
+        player.updateGUI()
+        winLabel = Label(dealerCanvas, text="You Win", font=hfont, bg="#39e75f")
         winLabel.place(relheight=0.25, relwidth=0.25, relx=0.5, rely=0.5, anchor="center")
         #Create a button to play again and pass the previous label to destroy, if played again
-        playAgainButton = Button(canvasBack, text="Play Again", command= lambda: playagain(winLabel, playAgainButton))
+        playAgainButton = Button(canvasBack, text="Play Again", font=hfont, command= lambda: playagain(winLabel, playAgainButton))
     #Disable hit button and stay button
     hitButton.config(state=DISABLED)
     stayButton.config(state=DISABLED)
@@ -143,13 +178,13 @@ def busted():
     #Display Dealer Card
     dealerCards[0].display_card(dealerCanvas, 230*0+250, 300)
     #Create label to say Busted on screen
-    bustedLabel = Label(playerCanvas, text="BUSTED", fg="red", bg="#ab23ff")
+    bustedLabel = Label(playerCanvas, text="BUSTED", font=hfont, fg="red", bg="#ab23ff")
     bustedLabel.place(relheight=0.25, relwidth=0.25, relx=0.5, rely=0.5, anchor="center")
     #Disable hit button and stay button
     hitButton.config(state=DISABLED)
     stayButton.config(state=DISABLED)
     #Create button to play again
-    playAgainButton = Button(canvasBack, text="Play Again", command= lambda: playagain(bustedLabel, playAgainButton))
+    playAgainButton = Button(canvasBack, text="Play Again", font=hfont, command= lambda: playagain(bustedLabel, playAgainButton))
     playAgainButton.place(relheight=0.05, relwidth=0.075, relx=0.05, rely=0.9)
 
 """
@@ -274,7 +309,7 @@ Create the main window and a frame to put everthing in
 #TK main window
 rootWindow = tk.Tk()
 rootWindow.title("BlackJack")
-rootWindow.geometry("800x500")
+rootWindow.geometry("1920x1080")
 
 #Create frame for items to go into
 frame1 = Frame(rootWindow, bg="green", bd=1, relief=SUNKEN)
@@ -351,6 +386,7 @@ for i in range(len(playerHand['cards'])):
 
 """---------------------------------------------------------- /API -----------------------------------------------------------------------------------------"""
 
+hfont = Font(family="Helvetica", size=18, weight="bold")
 
 
 """
@@ -370,7 +406,7 @@ dealerFrame.place(relheight=0.5, relwidth=0.6, rely=0.05, relx=0.5, anchor="n")
 #Create a canvas to draw the dealer's cards on
 dealerCanvas = Canvas(dealerFrame, bg="green")
 dealerCanvas.place(relheight=1, relwidth=1)
-Label(dealerCanvas, text="Dealer", bg="green", relief=SUNKEN).place(relheight=0.09, relwidth=0.09)
+Label(dealerCanvas, text="Dealer", bg="green").place(relheight=0.09, relwidth=0.09)
 
 
 """
@@ -382,17 +418,17 @@ playerFrame.place(relheight=0.35, relwidth=0.6, rely=0.95, relx=0.5, anchor="s")
 #Create a canvas to draw the cards on
 playerCanvas = Canvas(playerFrame, bg="green")
 playerCanvas.place(relheight=1, relwidth=1)
-Label(playerCanvas, text="Your cards", bg="green", relief=SUNKEN).place(relheight=0.09, relwidth=0.09)
+Label(playerCanvas, text="Your cards", bg="green").place(relheight=0.09, relwidth=0.09)
 
 
 """
 Create the hit and stay buttons
 """
 #Hit button
-hitButton = Button(canvasBack, text="Hit", padx=1, pady=1, command=hit)
+hitButton = Button(canvasBack, text="Hit", font=hfont, padx=1, pady=1, command=hit)
 hitButton.place(relheight=0.05, relwidth=0.075, relx=0.05, rely=0.65)
 #Stay Button
-stayButton = Button(canvasBack, text="Stay", padx=1, pady=1, command=stay)
+stayButton = Button(canvasBack, text="Stay", font=hfont, padx=1, pady=1, command=stay)
 stayButton.place(relheight=0.05, relwidth=0.075, relx=0.05, rely=0.725)
 
 
@@ -400,14 +436,41 @@ stayButton.place(relheight=0.05, relwidth=0.075, relx=0.05, rely=0.725)
 Give the player a 'total' amount the cards are worth in their hand
 """
 #label for 'Total'
-Label(canvasBack, text="Total:", bg="green").place(relheight=0.02, relwidth=0.02, relx=0.035, rely=0.82)
+Label(canvasBack, text="Total:", bg="green", font=hfont).place(relx=0.035, rely=0.82)
 
 handTotal = StringVar(canvasBack, '000')
-handTotalLabel = Label(canvasBack, textvariable=handTotal, bg="green").place(relheight=0.01, relwidth=0.01, relx=0.05, rely=0.82)
+handTotalLabel = Label(canvasBack, textvariable=handTotal, bg="green", font=hfont).place(relx=0.07, rely=0.82)
 
 handTotal.set(str(getTotal(playerCards)))
 print("\n\n\n\DEBUG::::::::::" + str(getTotal(playerCards)))
 
+"""
+Create a win/lose counter and Labels
+"""
+#label for "win"
+Label(canvasBack, text="Wins:", bg="green", font=hfont).place(relx=0.035, rely=0.15)
+#label for "lose"
+Label(canvasBack, text="Loses:", bg="green", font=hfont).place(relx=0.035, rely=0.2)
+
+#counters Labels
+winCountLabelStr = StringVar()
+winCountLabel = Label(canvasBack, textvariable=winCountLabelStr, bg="green", font=hfont)
+winCountLabel.place(relx=0.07, rely=0.15)
+loseCountLabelStr = StringVar()
+loseCountLabel = Label(canvasBack, textvariable=loseCountLabelStr, bg="green", font=hfont)
+loseCountLabel.place(relx=0.07, rely=0.2)
+
+#Get the loses and wins from file
+file = open("W-L", 'r')
+wins = file.readline()
+print("WINS:::::" + str(wins))
+winCountLabelStr.set(wins)
+loseCountLabelStr.set(file.readline())
+print("WINS FROM FILE::::::" + str(winCountLabelStr.get()))
+print("LOSES FROM FILE::::::" + str(loseCountLabelStr.get()))
+file.close()
+
+player = Player(winCountLabelStr.get(), loseCountLabelStr.get())
 
 """
 Display the cards
@@ -431,6 +494,7 @@ for i in range(len(playerCards)):
     playerCards[i].display_card(playerCanvas, 230*i+250, 300)
 
 bust = False
+
 
 """---------------------------------------------------------- /GUI -----------------------------------------------------------------------------------------"""
 
